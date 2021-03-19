@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>
+            Web sockets!!
+        </title>
+    </head>
+    <body>
+        <div id="name"></div>
+        <form action="sendMessage()">
+            <input type="text" name="message" id="message" placeholder="Type a message">
+        </form>
+        <button onclick="sendMessage()">Send</button>
+        <ul id="chat"></ul>
+    </body>
+    <script>
+       
+       var date= new Date()
+        const ws= new WebSocket("ws://localhost:8080/ws")
+        console.log("attempting connection")
+
+        ws.CLOSING=()=>{
+            const cookieValue = document.cookie.split("=")
+            var message = cookieValue[1]+ " left"
+            var m={"name": "", "message": message}
+            ws.send(JSON.stringify(m))
+        }   
+        ws.onopen= ()=>{
+            console.log("Successfully connected")
+            const cookieValue = document.cookie.split("=")
+            var message = cookieValue[1]+ " just hopped in!!"
+            var m={"name": "", "message": message}
+            ws.send(JSON.stringify(m))
+            
+        }
+
+        ws.onmessage= (m)=>{
+            console.log(m)
+        }
+
+        ws.onclose= (event)=>{
+            console.log("Closed")
+        }
+
+        ws.onerror= (error)=> {
+            console.log("Error: ", error)
+        }
+
+        ws.onmessage= function (message){
+            
+            //Decode json to extract message
+            
+            
+            
+            msg= JSON.parse(message.data)
+            
+            console.log(message.data.toString())
+            
+            
+            if(msg.name=="")
+            {
+                var element= document.createElement("div")
+                text= document.createTextNode(msg.message)
+                element.appendChild(text)
+                document.getElementById("chat").appendChild(element)
+            }
+            else
+            {
+                var element= document.createElement("li")
+                text= document.createTextNode(msg.name+" : "+ msg.message)
+                element.appendChild(text)
+                document.getElementById("chat").appendChild(element)
+            }
+        
+            
+           
+        }
+
+        
+        function sendMessage()
+        {
+            
+            //send json of time and userName
+
+            const cookieValue = document.cookie.split("=")
+
+            var msg= document.getElementById("message").value
+            
+            var message= { 'name': cookieValue[1] , 'message': msg } 
+            console.log(message['name'])
+            ws.send(JSON.stringify( message))
+            
+
+            document.getElementById("message").value= "";
+        }
+    </script>
+</html>
